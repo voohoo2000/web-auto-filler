@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Auto Filler</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="view-list" class="view">
+    <div class="header">
+        <h2 class="title" id="listTitle">Web Auto Filler</h2>
+        <div class="header-actions">
+           <button id="globalBtn" class="btn icon-btn" title="管理所有站点">🌐</button>
+           <button id="importBtn" class="btn icon-btn" title="导入本站规则">📥</button>
+           <button id="exportBtn" class="btn icon-btn" title="导出本站规则">📤</button>
+        </div>
+    </div>
+    
+    <div class="dashboard-bar">
+        <button id="runAllBtn" class="btn run-all-btn">▶️ 运行本页所有规则</button>
+        <button id="addRuleBtn" class="btn primary-btn">+ 新建规则</button>
+    </div>
+    <div id="offlineNotice" class="warning-bar hidden">当前查看的不是本页规则，无法运行或抓取。</div>
+
+    <div id="rulesListContainer" class="rules-list"></div>
+    <div id="emptyState" class="empty-state hidden">此网站暂无规则。</div>
+  </div>
+
+  <div id="view-editor" class="view hidden">
+    <div class="editor-header">
+        <button id="backBtn" class="btn-text">← 返回</button>
+        <h3>编辑规则</h3>
+        <div class="toggle-wrapper">
+             <label for="ruleEnabled">启用</label>
+             <input type="checkbox" id="ruleEnabled">
+        </div>
+    </div>
+    
+    <div class="editor-body">
+        <div class="form-group row-split">
+            <div style="flex:2">
+                <label>规则名称</label>
+                <input type="text" id="ruleName" class="form-control" placeholder="规则名称">
+            </div>
+            <div style="flex:1">
+                <label>触发方式</label>
+                <select id="triggerMode" class="form-control">
+                    <option value="auto">⚡ 自动监控</option>
+                    <option value="manual">👆 手动点击</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <h4>触发条件 (IF)</h4>
+            <span class="hint">当...</span>
+        </div>
+        <div id="conditionsList" class="dynamic-list"></div>
+        <button id="addConditionBtn" class="btn dashed full-width">+ 添加条件</button>
+
+        <div class="section-title" style="margin-top:20px;">
+            <h4>执行动作 (THEN)</h4>
+            <span class="hint">则...</span>
+        </div>
+        <div id="actionsList" class="dynamic-list"></div>
+        <button id="addActionBtn" class="btn dashed full-width">+ 添加动作</button>
+    </div>
+
+    <div class="editor-footer">
+        <button id="deleteRuleBtn" class="btn danger">删除</button>
+        <button id="saveRuleBtn" class="btn primary big">保存规则</button>
+    </div>
+  </div>
+
+  <div id="view-global" class="view hidden">
+    <div class="header">
+        <button id="globalBackBtn" class="btn-text">← 返回</button>
+        <h2 class="title">所有站点规则</h2>
+        <div class="header-actions">
+           <button id="globalImportBtn" class="btn icon-btn" title="全局导入">📥</button>
+           <button id="globalExportBtn" class="btn icon-btn" title="全局导出">📤</button>
+        </div>
+    </div>
+    <div id="domainListContainer" class="rules-list"></div>
+    <div id="emptyGlobalState" class="empty-state hidden">暂无任何数据。</div>
+  </div>
+
+  <input type="file" id="fileInput" style="display:none" accept=".json">
+  <input type="file" id="globalFileInput" style="display:none" accept=".json">
+  <script src="popup.js"></script>
+</body>
+</html>
