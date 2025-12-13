@@ -33,7 +33,7 @@
 
 1.  **下载代码：** 点击下载 Zip 包或使用 Git 克隆本仓库：
     ```bash
-    git clone [https://github.com/voohoo2000/Web-Auto-Filler.git](https://github.com/voohoo2000/Web-Auto-Filler.git)
+    git clone https://github.com/voohoo2000/Web-Auto-Filler.git
     ```
 2.  **打开扩展管理页：** 在 Chrome 浏览器地址栏输入 `chrome://extensions/` 并回车。
 3.  **开启开发者模式：** 点击页面右上角的开关，开启 **“开发者模式” (Developer mode)**。
