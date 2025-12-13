@@ -7,8 +7,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.action.setBadgeText({ text: text, tabId: sender.tab.id });
             chrome.action.setBadgeBackgroundColor({ color: "#28a745", tabId: sender.tab.id });
         }
-    } catch (e) {
-        console.log("Badge update failed (Tab likely closed).");
-    }
+    } catch (e) {}
   }
 });

@@ -19,13 +19,11 @@ function startMonitoring() {
   if (isContextInvalidated) return;
   checkAndExecuteAll(false);
   if (observer) observer.disconnect();
-  
   observer = new MutationObserver((mutations) => {
     if (isContextInvalidated) { observer.disconnect(); return; }
     if(window.domChangeTimeout) clearTimeout(window.domChangeTimeout);
     window.domChangeTimeout = setTimeout(() => { checkAndExecuteAll(false); }, 500); 
   });
-  
   observer.observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true });
 }
 
@@ -37,18 +35,14 @@ function checkAndExecuteAll(forceRun) {
     if (!forceRun && rule.triggerMode === 'manual') return;
     if (processRule(rule)) triggeredCount++;
   });
-
   try {
       if (chrome.runtime?.id) {
           chrome.runtime.sendMessage({ action: "updateBadge", count: triggeredCount });
           const hostname = window.location.hostname;
           chrome.storage.local.set({ [hostname]: rules });
-      } else {
-          throw new Error("Extension context invalidated");
-      }
+      } else { throw new Error("Extension context invalidated"); }
   } catch (e) {
       if (e.message.includes("Extension context invalidated") || !chrome.runtime?.id) {
-          console.warn("[Web Auto Filler] 插件已更新，监控停止。请刷新页面。");
           isContextInvalidated = true;
           if (observer) observer.disconnect();
       }
@@ -194,12 +188,15 @@ function handleClick(e) {
   e.preventDefault(); e.stopPropagation();
   const el = e.target;
   let locator = { type: 'selector', value: '' };
+  
+  // 智能推断，但现在 UI 支持手动修改类型了
   if (el.id) locator = { type: 'id', value: el.id };
   else if (el.name) locator = { type: 'name', value: el.name };
   else locator = { type: 'selector', value: generateSelector(el) };
+
   const result = { locator: locator, sampleText: el.innerText.substring(0, 20) };
   chrome.storage.local.set({ 'pickerResult': result }, () => {
-      alert(`已捕获: ${locator.value}\n请重新打开插件窗口。`);
+      alert(`已捕获: [${locator.type}] ${locator.value}\n请重新打开插件窗口。`);
       disablePicker();
   });
 }

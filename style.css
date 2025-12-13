@@ -59,6 +59,7 @@ button.run-all-btn:disabled { background-color: #ccc !important; border-color: #
 .locator-input { flex: 2; font-family: monospace; font-size: 12px; }
 .value-input { flex: 2; }
 .op-select { width: 90px; }
+.type-select { width: 70px; background: #f0f0f0; border: 1px solid #ccc; font-size: 12px; }
 .picker-btn { padding: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 .picker-btn:disabled { background: #eee; color: #aaa; border-color: #ddd; cursor: not-allowed; }
 .remove-btn { padding: 4px 8px; font-size: 12px; color: #999; }

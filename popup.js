@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         activeTabDomain = "";
     }
-    
     currentViewDomain = activeTabDomain;
 
     const storageData = await chrome.storage.local.get(['draftState', 'pickerResult']);
@@ -22,25 +21,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedDraft) {
         draftState = savedDraft;
         currentViewDomain = draftState.domain;
-
         if (pickerResult) {
             applyPickerResult(draftState, pickerResult);
             chrome.storage.local.remove('pickerResult');
             saveDraft(); 
         }
-        loadRules(currentViewDomain, () => {
-             renderEditor();
-             switchView('editor');
-        });
+        loadRules(currentViewDomain, () => { renderEditor(); switchView('editor'); });
     } else {
-        if(currentViewDomain) {
-            loadRules(currentViewDomain, () => switchView('list'));
-        } else {
-             loadGlobalList();
-             switchView('global');
-        }
+        if(currentViewDomain) { loadRules(currentViewDomain, () => switchView('list')); } 
+        else { loadGlobalList(); switchView('global'); }
     }
-
     setupEvents();
 });
 
@@ -81,7 +71,6 @@ function switchView(viewName) {
 function renderRulesList() {
     const container = document.getElementById('rulesListContainer');
     container.innerHTML = '';
-    
     if (currentRules.length === 0) {
         document.getElementById('emptyState').classList.remove('hidden');
         return;
@@ -92,7 +81,6 @@ function renderRulesList() {
         const div = document.createElement('div');
         const isManual = rule.triggerMode === 'manual';
         const isMatched = rule.lastMatched && (currentViewDomain === activeTabDomain);
-        
         div.className = `rule-card ${isMatched ? 'matched' : ''} ${isManual ? 'manual' : ''}`;
         let statusText = rule.enabled ? '🟢 已启用' : '⚪ 已禁用';
         let modeText = isManual ? '👆 手动触发' : '⚡ 自动触发';
@@ -100,10 +88,7 @@ function renderRulesList() {
         let runBtn = canRun ? `<button class="btn secondary run-single-btn" title="运行">▶</button>` : '';
 
         div.innerHTML = `
-            <div class="rule-info">
-                <strong>${rule.name}</strong>
-                <small>${statusText} | ${modeText}</small>
-            </div>
+            <div class="rule-info"><strong>${rule.name}</strong><small>${statusText} | ${modeText}</small></div>
             <div class="rule-actions">
                 ${runBtn}
                 <button class="btn secondary edit-btn">编辑</button>
@@ -124,10 +109,7 @@ function loadGlobalList() {
         const systemKeys = ['draftState', 'pickerResult'];
         const domains = Object.keys(items).filter(k => !systemKeys.includes(k) && Array.isArray(items[k]));
         
-        if (domains.length === 0) {
-            document.getElementById('emptyGlobalState').classList.remove('hidden');
-            return;
-        }
+        if (domains.length === 0) { document.getElementById('emptyGlobalState').classList.remove('hidden'); return; }
         document.getElementById('emptyGlobalState').classList.add('hidden');
 
         domains.forEach(domain => {
@@ -144,9 +126,7 @@ function loadGlobalList() {
                 loadRules(domain, () => switchView('list'));
             };
             div.querySelector('.del-domain-btn').onclick = () => {
-                if(confirm(`确定要删除 ${domain} 的所有规则吗？`)) {
-                    chrome.storage.local.remove(domain, () => loadGlobalList());
-                }
+                if(confirm(`确定删除 ${domain} 的所有规则？`)) { chrome.storage.local.remove(domain, () => loadGlobalList()); }
             };
             container.appendChild(div);
         });
@@ -156,8 +136,7 @@ function loadGlobalList() {
 function runRule(rule) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if(tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { action: "executeSpecificRule", rule: rule }, (res) => {
-            if(res && res.matched) location.reload();
-            else alert("未满足触发条件");
+            if(res && res.matched) location.reload(); else alert("未满足触发条件");
         });
     });
 }
@@ -228,7 +207,7 @@ function renderList(type, items, isOffline) {
         div.className = 'list-item';
         
         let targetAreaHtml = '';
-        let pickerDisabled = isOffline ? 'disabled title="离线模式无法选择"' : 'title="选择元素"';
+        let pickerDisabled = isOffline ? 'disabled title="离线模式"' : 'title="选择元素"';
 
         if (type === 'conditions') {
             targetAreaHtml = `
@@ -249,7 +228,7 @@ function renderList(type, items, isOffline) {
                 let displayVal = (typeof item.value === 'object' && item.value.value) ? item.value.value : '';
                 inputHtml = `
                     <button class="btn picker-btn" id="act-val-pick-${i}" ${pickerDisabled} style="margin-right:5px">🎯</button>
-                    <input type="text" class="form-control value-input" value="${displayVal}" placeholder="来源控件ID/Selector" data-field="value-control">`;
+                    <input type="text" class="form-control value-input" value="${displayVal}" placeholder="来源控件ID/Name" data-field="value-control">`;
             } else {
                 let displayVal = (typeof item.value === 'object') ? '' : item.value;
                 inputHtml = `<input type="text" class="form-control value-input" value="${displayVal}" placeholder="填入文本" data-field="value-static">`;
@@ -267,17 +246,22 @@ function renderList(type, items, isOffline) {
             </div>`;
         }
 
+        // V16 核心变化：每一行 locator 前面增加类型选择框
         div.innerHTML = `
             <div class="row">
                 <button class="btn picker-btn target-pick" ${pickerDisabled}>🎯</button>
-                <input type="text" class="form-control locator-input" value="${item.locator.value}" placeholder="目标控件ID/Selector" data-field="locator">
+                <select class="form-control type-select" data-field="locator-type">
+                    <option value="selector" ${item.locator.type==='selector'?'selected':''}>CSS</option>
+                    <option value="id" ${item.locator.type==='id'?'selected':''}>ID</option>
+                    <option value="name" ${item.locator.type==='name'?'selected':''}>Name</option>
+                    <option value="text" ${item.locator.type==='text'?'selected':''}>Text</option>
+                </select>
+                <input type="text" class="form-control locator-input" value="${item.locator.value}" placeholder="定位符" data-field="locator">
             </div>
             ${targetAreaHtml}
         `;
         
-        if (!isOffline) {
-            div.querySelector('.target-pick').onclick = () => triggerPicker(type === 'conditions' ? 'condition' : 'action', i);
-        }
+        if (!isOffline) div.querySelector('.target-pick').onclick = () => triggerPicker(type === 'conditions' ? 'condition' : 'action', i);
 
         if (type === 'actions') {
             const typeSelect = div.querySelector(`#act-type-${i}`);
@@ -295,11 +279,13 @@ function renderList(type, items, isOffline) {
 
         div.querySelector('.remove-btn').onclick = () => { items.splice(i, 1); saveDraft(); renderEditor(); };
         
+        // 统一处理输入
         const inputHandler = (e) => {
             const field = e.target.dataset.field;
             if (!field) return; 
             
-            if (field === 'locator') { item.locator.value = e.target.value; item.locator.type = 'selector'; } 
+            if (field === 'locator') { item.locator.value = e.target.value; } // 不再强制重置 type
+            else if (field === 'locator-type') { item.locator.type = e.target.value; } // 手动切换类型
             else if (field === 'value-static') { item.value = e.target.value; }
             else if (field === 'value-control') { item.value = { type: 'selector', value: e.target.value }; }
             else if (field === 'targetValue') { item.targetValue = e.target.value; }
@@ -337,6 +323,7 @@ function updateDraftFromDOM() {
 function applyPickerResult(state, result) {
     if (!state.pickerTarget) return;
     const { type, index } = state.pickerTarget;
+    // Picker 返回了 type 和 value，我们需要全部更新
     if (type === 'condition') { state.rule.conditions[index].locator = result.locator; } 
     else if (type === 'action') { state.rule.actions[index].locator = result.locator; } 
     else if (type === 'action_value') { state.rule.actions[index].value = result.locator; }
@@ -385,13 +372,11 @@ function setupEvents() {
         else { alert("当前无活动标签页"); }
     };
     
-    // Import/Export (Single)
     document.getElementById('exportBtn').onclick = () => {
         const blob = new Blob([JSON.stringify(currentRules, null, 2)], {type : 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `${currentViewDomain}_rules.json`; a.click();
     };
-    
     document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('fileInput').onchange = (e) => {
         const file = e.target.files[0];
@@ -406,7 +391,6 @@ function setupEvents() {
         reader.readAsText(file);
     };
 
-    // Import/Export (Global)
     document.getElementById('globalExportBtn').onclick = () => {
         chrome.storage.local.get(null, (items) => {
             const exportData = {};

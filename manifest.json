@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Web Auto Filler",
-  "version": "15.0",
-  "description": "自动化网页填充工具 - 开源完整版",
+  "version": "16.0",
+  "description": "自动化网页填充工具 - 支持Name定位版",
   "permissions": [
     "storage",
     "activeTab",
