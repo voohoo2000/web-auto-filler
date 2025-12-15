@@ -189,7 +189,6 @@ function handleClick(e) {
   const el = e.target;
   let locator = { type: 'selector', value: '' };
   
-  // 智能推断，但现在 UI 支持手动修改类型了
   if (el.id) locator = { type: 'id', value: el.id };
   else if (el.name) locator = { type: 'name', value: el.name };
   else locator = { type: 'selector', value: generateSelector(el) };

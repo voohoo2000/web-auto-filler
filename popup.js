@@ -246,7 +246,7 @@ function renderList(type, items, isOffline) {
             </div>`;
         }
 
-        // V16 核心变化：每一行 locator 前面增加类型选择框
+        // 行 HTML 结构
         div.innerHTML = `
             <div class="row">
                 <button class="btn picker-btn target-pick" ${pickerDisabled}>🎯</button>
@@ -279,15 +279,21 @@ function renderList(type, items, isOffline) {
 
         div.querySelector('.remove-btn').onclick = () => { items.splice(i, 1); saveDraft(); renderEditor(); };
         
-        // 统一处理输入
+        // 核心修复逻辑：在输入定位符时，如果type为空，默认设为 selector
         const inputHandler = (e) => {
             const field = e.target.dataset.field;
             if (!field) return; 
             
-            if (field === 'locator') { item.locator.value = e.target.value; } // 不再强制重置 type
-            else if (field === 'locator-type') { item.locator.type = e.target.value; } // 手动切换类型
+            if (field === 'locator') { 
+                item.locator.value = e.target.value; 
+                if (!item.locator.type) item.locator.type = 'selector'; // Fix V17
+            } 
+            else if (field === 'locator-type') { item.locator.type = e.target.value; } 
             else if (field === 'value-static') { item.value = e.target.value; }
-            else if (field === 'value-control') { item.value = { type: 'selector', value: e.target.value }; }
+            else if (field === 'value-control') { 
+                item.value = { type: 'selector', value: e.target.value }; 
+                if(!item.value.type) item.value.type = 'selector'; // Fix V17
+            }
             else if (field === 'targetValue') { item.targetValue = e.target.value; }
             else if (field === 'operator') { item.operator = e.target.value; }
             saveDraft();
@@ -323,7 +329,6 @@ function updateDraftFromDOM() {
 function applyPickerResult(state, result) {
     if (!state.pickerTarget) return;
     const { type, index } = state.pickerTarget;
-    // Picker 返回了 type 和 value，我们需要全部更新
     if (type === 'condition') { state.rule.conditions[index].locator = result.locator; } 
     else if (type === 'action') { state.rule.actions[index].locator = result.locator; } 
     else if (type === 'action_value') { state.rule.actions[index].value = result.locator; }
@@ -355,15 +360,16 @@ function setupEvents() {
         } else if (draftState.isNew) { clearDraft(); switchView('list'); }
     };
     
+    // Fix V17: Initialization with type:'selector'
     document.getElementById('addConditionBtn').onclick = () => {
         updateDraftFromDOM();
-        draftState.rule.conditions.push({ locator: {type:'', value:''}, operator: 'equals', targetValue: '' });
+        draftState.rule.conditions.push({ locator: {type:'selector', value:''}, operator: 'equals', targetValue: '' });
         saveDraft(); renderEditor();
     };
     
     document.getElementById('addActionBtn').onclick = () => {
         updateDraftFromDOM();
-        draftState.rule.actions.push({ locator: {type:'', value:''}, valueType: 'static', value: '' });
+        draftState.rule.actions.push({ locator: {type:'selector', value:''}, valueType: 'static', value: '' });
         saveDraft(); renderEditor();
     };
     
